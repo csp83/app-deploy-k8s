@@ -28,3 +28,9 @@ kubectl apply -f deployment.yaml
 
 # Check that it's running
 kubectl get pods
+
+# Get invoice-app NodePort access
+minikube service invoice-app --url
+
+# Export invoice-app NodePort URL. We need this in test.sh
+export INVOICE_APP_URL=$(!!)
