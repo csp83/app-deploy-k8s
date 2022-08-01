@@ -12,8 +12,6 @@ USER gouser
 WORKDIR /build/
 COPY . .
 
-ENV URL="http://payment-provider:8082/payments/pay"
-
 RUN GOOS=linux
 RUN sudo go build -o app .
 
