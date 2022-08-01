@@ -85,6 +85,9 @@ Feel free to express your thoughts and share your experiences with real-world ex
    * Node Autoscaling (Spin up additional nodes if the existing ones can't accept any more pods.)
    * Configure SSL Certificate for invoice app (Because invoice app is reachable from outside the cluster)
    * Decouple DB from invoice app. (Deploy DB as a StatefulSet or use managed DB service )
+   * Resource requests and limits
+   * Liveness, Readiness & Startup probes
+   * Use Namespaces
 2. There are 2 microservices that are maintained by 2 different teams. Each team should have access only to their service inside the cluster. How would you approach this?
    * Deploy those 2 microservices in two different namespace. Using Role and RoleBinding gives those teams access for only their namespace
 3. How would you prevent other services running in the cluster to communicate to `payment-provider`?
