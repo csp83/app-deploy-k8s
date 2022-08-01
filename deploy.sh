@@ -33,4 +33,4 @@ kubectl get pods
 minikube service invoice-app --url
 
 # Export invoice-app NodePort URL. We need this in test.sh
-export INVOICE_APP_URL=$(!!)
+export INVOICE_APP_URL=$(minikube service invoice-app --url)
