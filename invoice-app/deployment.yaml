@@ -16,6 +16,9 @@ spec:
       - name: main
         image: invoice-app:latest
         imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: invoice-app-config
       securityContext:
         runAsUser: 1001
 ---
