@@ -213,6 +213,9 @@ We would like these 2 apps, `invoice-app` and `payment-provider`, to run in a K8
   # From host, push the Docker image directly to minikube
   minikube image load invoice-app:latest
   
+  # Apply configmap
+  kubectl apply -f configmap.yaml
+  
   # Deploy
   kubectl apply -f deployment.yaml
   
@@ -238,25 +241,101 @@ We would like these 2 apps, `invoice-app` and `payment-provider`, to run in a K8
   export INVOICE_APP_URL=$(minikube service invoice-app --url)
   
   ```
-
+  
   
 
 6. Complete `test.sh` so we can validate your solution can successfully pay all the unpaid invoices and return a list of all the paid invoices.
 
+   * before run this test, you need to install jq tool  <br />
+   
+     Linux => sudo apt install jq, sudo dnf install jq  <br />
+   
+     Mac   => brew install jq  <br />
+   
    ```shell
    #!/bin/bash
    
+   # before run this test, you need to install jq tool
+   # Linux => sudo apt install jq, sudo dnf install jq 
+   # Mac   => brew install jq
+   
+   # exporting invoice-app-url
+   echo "exporting invoice-app-url..."
+   export INVOICE_APP_URL=$(minikube service invoice-app --url)
+   echo $INVOICE_APP_URL
+   
+   echo -e '\n'
    # check invoices status
+   echo "checking current status of invoices..."
    curl $INVOICE_APP_URL/invoices
    
-   # pay
-   curl -d '{"InvoiceId":"I1", "Value":"12.15", "Currency":"EUR"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
+   echo -e '\n'
+   # save invoices in to file
+   echo "saving invoices in to file..."
+   curl $INVOICE_APP_URL/invoices > invoice.json
    
-   # check invoices status
-   curl $INVOICE_APP_URL/invoices
+   ########## invoice 1 ##########
+   echo -e '\n'
+   # get first invoice
+   echo "getting first invoice..."
+   jq '.[0]' invoice.json
+   
+   # check the invoice 1 status
+   invoice1=$(jq '.[0].IsPaid' invoice.json)
+   
+   # invoice 1 logic
+   if [ "$invoice1" = "false" ]; then
+       echo "Paying invoice 1 bill..."
+       curl -d '{"InvoiceId":"I1", "Value":"12.15", "Currency":"EUR"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
+   else
+       echo "Invoice 1 is already paid!"
+   fi
+   
+   ########## invoice 2 ##########
+   echo -e '\n'
+   # get second invoice
+   echo "getting second invoice status..."
+   jq '.[1]' invoice.json
+   
+   # check the invoice 2 status
+   invoice2=$(jq '.[1].IsPaid' invoice.json)
+   
+   # invoice 2 logic
+   if [ "$invoice2" = "false" ]; then
+       echo "Paying invoice 2 bill..."
+       curl -d '{"InvoiceId":"I2","Value":10.25,"Currency":"GBP"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
+   else
+       echo "Invoice 2 is already paid!"
+   fi
+   
+   ########## invoice 3 ##########
+   echo -e '\n'
+   # get third invoice
+   echo "getting third invoice status..."
+   jq '.[2]' invoice.json
+   
+   # check the invoice 3 status
+   invoice3=$(jq '.[2].IsPaid' invoice.json)
+   
+   # invoice 3 logic
+   if [ "$invoice3" = "false" ]; then
+       echo "Paying invoice 3 bill..."
+       curl -d '{"InvoiceId":"I3","Value":66.13,"Currency":"DKK"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
+   else
+       echo "Invoice 3 is already paid!"
+   fi
+   
+   echo -e '\n'
+   # remove invoice.json
+   echo "removing invoice.json..."
+   rm -f invoice.json
+   
+   echo -e '\n'
+   echo "Test complete!"
+   
    
    ```
-
+   
    
 
 ### Part 3 - Questions

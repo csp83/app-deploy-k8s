@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# before run this test need to install jq tool
+# before run this test, you need to install jq tool
 # Linux => sudo apt install jq, sudo dnf install jq 
 # Mac   => brew install jq
 
