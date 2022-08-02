@@ -22,6 +22,9 @@ cd ../payment-provider \
 # From host, push the Docker image directly to minikube
 minikube image load payment-provider:latest
 
+# Apply configmap
+kubectl apply -f configmap.yaml
+
 # Deploy deployment
 kubectl apply -f deployment.yaml
 
