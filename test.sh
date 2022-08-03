@@ -8,72 +8,60 @@
 echo "exporting invoice-app-url..."
 export INVOICE_APP_URL=$(minikube service invoice-app --url)
 echo $INVOICE_APP_URL
-
 echo -e '\n'
-# check invoices status
-echo "checking current status of invoices..."
-curl $INVOICE_APP_URL/invoices
 
-echo -e '\n'
 # save invoices in to file
 echo "saving invoices in to file..."
 curl $INVOICE_APP_URL/invoices > invoice.json
-
-########## invoice 1 ##########
 echo -e '\n'
-# get first invoice
-echo "getting first invoice..."
-jq '.[0]' invoice.json
 
-# check the invoice 1 status
-invoice1=$(jq '.[0].IsPaid' invoice.json)
+# check invoices status
 
-# invoice 1 logic
-if [ "$invoice1" = "false" ]; then
-    echo "Paying invoice 1 bill..."
-    curl -d '{"InvoiceId":"I1", "Value":"12.15", "Currency":"EUR"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
-else
-    echo "Invoice 1 is already paid!"
-fi
-
-########## invoice 2 ##########
+printf "Before Paid - Current status of invoices...\n"
+curl $INVOICE_APP_URL/invoices
 echo -e '\n'
-# get second invoice
-echo "getting second invoice status..."
-jq '.[1]' invoice.json
 
-# check the invoice 2 status
-invoice2=$(jq '.[1].IsPaid' invoice.json)
 
-# invoice 2 logic
-if [ "$invoice2" = "false" ]; then
-    echo "Paying invoice 2 bill..."
-    curl -d '{"InvoiceId":"I2","Value":10.25,"Currency":"GBP"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
-else
-    echo "Invoice 2 is already paid!"
-fi
-
-########## invoice 3 ##########
+# Get the total number of invoices
+size=$(jq length invoice.json)
+printf "Total number of invoices - %s" "$size"
 echo -e '\n'
-# get third invoice
-echo "getting third invoice status..."
-jq '.[2]' invoice.json
 
-# check the invoice 3 status
-invoice3=$(jq '.[2].IsPaid' invoice.json)
 
-# invoice 3 logic
-if [ "$invoice3" = "false" ]; then
-    echo "Paying invoice 3 bill..."
-    curl -d '{"InvoiceId":"I3","Value":66.13,"Currency":"DKK"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
-else
-    echo "Invoice 3 is already paid!"
-fi
+# Pay the invoice for all the unpaid ones
+echo "Paying the invoice for all the unpaid ones..."
+for (( c=0; c<size; c++ ))
+do
+   result=$( echo $c+1 | bc )
+
+   echo -e '\n'
+   printf "### Invoice - %s" "$result details"
+   printf "\nInvoiceId =  %s" "$(jq '.['$c'].InvoiceId' invoice.json)"
+   printf "\nValue =  %s" "$(jq '.['$c'].Value' invoice.json)"
+   printf "\nCurrency =  %s" "$(jq '.['$c'].Currency' invoice.json)"
+   IsPaid=$(jq '.['$c'].IsPaid' invoice.json)
+
+   if [ $c = 1 ]; then
+      IsPaid=false
+      printf "\nIsPaid =  %s" "$IsPaid"
+   else
+      printf "\nIsPaid =  %s" "$IsPaid"
+   fi
+
+   echo -e '\n'
+
+   if [ "$IsPaid" = "false" ]; then
+       echo "Paying Invoice" $result "bill..."
+       curl -d '{"InvoiceId":"'+$InvoiceId+'", "Value":"'+Value+'", "Currency":"'+Currency+'"}' -H "Content-Type: application/json" -X POST $INVOICE_APP_URL/invoices/pay
+   else
+       echo "Invoice "$result" is already paid!"
+   fi
+done
 
 echo -e '\n'
-# remove invoice.json
-echo "removing invoice.json..."
-rm -f invoice.json
+# check invoices status
+printf "After Paid - Current status of invoices...\n"
+curl $INVOICE_APP_URL/invoices
 
 echo -e '\n'
 echo "Test complete!"
