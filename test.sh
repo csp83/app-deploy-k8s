@@ -4,6 +4,8 @@
 # Linux => sudo apt install jq, sudo dnf install jq 
 # Mac   => brew install jq
 
+# if you want shell output (test result) to file run this command -> ./test.sh 2>&1 | tee test-result.txt
+
 # exporting invoice-app-url
 echo "exporting invoice-app-url..."
 export INVOICE_APP_URL=$(minikube service invoice-app --url)
@@ -16,7 +18,6 @@ curl $INVOICE_APP_URL/invoices > invoice.json
 echo -e '\n'
 
 # check invoices status
-
 printf "Before Paid - Current status of invoices...\n"
 curl $INVOICE_APP_URL/invoices
 echo -e '\n'
